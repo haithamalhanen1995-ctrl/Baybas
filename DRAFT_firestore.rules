@@ -1,0 +1,86 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net (default deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global Helper functions
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+
+    // Validation for LicenseKey
+    function isValidLicenseKey(data) {
+      return data.id is string && data.id.size() <= 128
+        && data.key is string && data.key.size() <= 64
+        && data.type is string && (data.type == '24h' || data.type == '7d' || data.type == '30d' || data.type == 'lifetime')
+        && data.status is string && (data.status == 'active' || data.status == 'expired' || data.status == 'unused')
+        && (data.hwid == null || (data.hwid is string && data.hwid.size() <= 128))
+        && data.createdAt is string && data.createdAt.size() <= 32
+        && (!('activatedAt' in data) || (data.activatedAt is string && data.activatedAt.size() <= 32))
+        && (!('expiresAt' in data) || (data.expiresAt is string && data.expiresAt.size() <= 32))
+        && (!('notes' in data) || (data.notes is string && data.notes.size() <= 1024))
+        && (!('username' in data) || (data.username is string && data.username.size() <= 128))
+        && (!('isLocked' in data) || data.isLocked is bool);
+    }
+
+    // Validation for SupportTicket
+    function isValidSupportTicket(data) {
+      return data.id is string && data.id.size() <= 128
+        && data.username is string && data.username.size() <= 128
+        && data.platform is string && (data.platform == 'Telegram' || data.platform == 'WhatsApp')
+        && data.contact is string && data.contact.size() <= 128
+        && (!('bypassType' in data) || (data.bypassType is string && data.bypassType.size() <= 128))
+        && (!('emulator' in data) || (data.emulator is string && data.emulator.size() <= 128))
+        && data.status is string && (data.status == 'pending' || data.status == 'completed')
+        && data.createdAt is string && data.createdAt.size() <= 32;
+    }
+
+    // Validation for BypassConfig
+    function isValidBypassConfig(data) {
+      return data.gameLoopActive is bool
+        && data.ldPlayerActive is bool
+        && data.mumuPlayerActive is bool
+        && data.antiCheatState is string && (data.antiCheatState == 'active' || data.antiCheatState == 'passive' || data.antiCheatState == 'stealth')
+        && data.securityProtocol is string && data.securityProtocol.size() <= 128
+        && data.gameVersion is string && data.gameVersion.size() <= 64
+        && data.bypassStatus is string && (data.bypassStatus == 'stable' || data.bypassStatus == 'updating' || data.bypassStatus == 'offline')
+        && data.clientVersion is string && data.clientVersion.size() <= 64;
+    }
+
+    // Validation for LiveActivity
+    function isValidLiveActivity(data) {
+      return data.id is string && data.id.size() <= 128
+        && data.user is string && data.user.size() <= 128
+        && data.action is string && data.action.size() <= 512
+        && data.time is string && data.time.size() <= 32
+        && data.status is string && (data.status == 'success' || data.status == 'warning' || data.status == 'info');
+    }
+
+    match /licenseKeys/{keyId} {
+      allow read: if true;
+      allow create, update: if isValidId(keyId) && isValidLicenseKey(incoming());
+      allow delete: if isValidId(keyId);
+    }
+
+    match /supportTickets/{ticketId} {
+      allow read: if true;
+      allow create, update: if isValidId(ticketId) && isValidSupportTicket(incoming());
+      allow delete: if isValidId(ticketId);
+    }
+
+    match /bypassConfig/{configId} {
+      allow read: if true;
+      allow write: if isValidId(configId) && isValidBypassConfig(incoming());
+    }
+
+    match /liveActivities/{activityId} {
+      allow read: if true;
+      allow create: if isValidId(activityId) && isValidLiveActivity(incoming());
+      allow delete, update: if isValidId(activityId);
+    }
+  }
+}

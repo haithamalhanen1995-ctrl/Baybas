@@ -1,0 +1,6 @@
+{
+  "name": "PUBG Bypass Premium Portal",
+  "description": "منصة إدارة وتوزيع مفاتيح بايباس ببجي للمحاكيات وخدمات الدعم الفني المباشر",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

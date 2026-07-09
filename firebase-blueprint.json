@@ -1,0 +1,95 @@
+{
+  "entities": {
+    "LicenseKey": {
+      "title": "LicenseKey",
+      "description": "Represents a license key for the PUBG Bypass Premium service",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "key": { "type": "string" },
+        "type": { "type": "string", "enum": ["24h", "7d", "30d", "lifetime"] },
+        "status": { "type": "string", "enum": ["active", "expired", "unused"] },
+        "hwid": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "activatedAt": { "type": "string" },
+        "expiresAt": { "type": "string" },
+        "notes": { "type": "string" },
+        "username": { "type": "string" },
+        "isLocked": { "type": "boolean" }
+      },
+      "required": ["id", "key", "type", "status", "createdAt"]
+    },
+    "SupportTicket": {
+      "title": "SupportTicket",
+      "description": "Represents a support or purchase ticket raised by a user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "username": { "type": "string" },
+        "platform": { "type": "string", "enum": ["Telegram", "WhatsApp"] },
+        "contact": { "type": "string" },
+        "bypassType": { "type": "string" },
+        "emulator": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "completed"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "username", "platform", "contact", "status", "createdAt"]
+    },
+    "BypassConfig": {
+      "title": "BypassConfig",
+      "description": "Global protection and status settings of the bypass system",
+      "type": "object",
+      "properties": {
+        "gameLoopActive": { "type": "boolean" },
+        "ldPlayerActive": { "type": "boolean" },
+        "mumuPlayerActive": { "type": "boolean" },
+        "antiCheatState": { "type": "string", "enum": ["active", "passive", "stealth"] },
+        "securityProtocol": { "type": "string" },
+        "gameVersion": { "type": "string" },
+        "bypassStatus": { "type": "string", "enum": ["stable", "updating", "offline"] },
+        "clientVersion": { "type": "string" }
+      },
+      "required": [
+        "gameLoopActive",
+        "ldPlayerActive",
+        "mumuPlayerActive",
+        "antiCheatState",
+        "securityProtocol",
+        "gameVersion",
+        "bypassStatus",
+        "clientVersion"
+      ]
+    },
+    "LiveActivity": {
+      "title": "LiveActivity",
+      "description": "A live audit log or activity feed entry visible in the admin/store",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "user": { "type": "string" },
+        "action": { "type": "string" },
+        "time": { "type": "string" },
+        "status": { "type": "string", "enum": ["success", "warning", "info"] }
+      },
+      "required": ["id", "user", "action", "time", "status"]
+    }
+  },
+  "firestore": {
+    "licenseKeys": {
+      "schema": { "$ref": "#/entities/LicenseKey" },
+      "description": "Collection of all system license keys, both used and unused"
+    },
+    "supportTickets": {
+      "schema": { "$ref": "#/entities/SupportTicket" },
+      "description": "Collection of customer support and sales inquiry tickets"
+    },
+    "bypassConfig": {
+      "schema": { "$ref": "#/entities/BypassConfig" },
+      "description": "Singleton configuration collection holding the global protection parameters"
+    },
+    "liveActivities": {
+      "schema": { "$ref": "#/entities/LiveActivity" },
+      "description": "Activity logs collection for admin and operational actions"
+    }
+  }
+}
